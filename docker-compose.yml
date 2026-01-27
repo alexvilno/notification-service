@@ -23,4 +23,4 @@ volumes:
 
 networks:
   app-network:
-    driver: # чтобы с хоста был доступ к сети контейнеров
+    driver: bridge # чтобы с хоста был доступ к сети контейнеров
