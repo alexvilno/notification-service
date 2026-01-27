@@ -62,7 +62,7 @@ class BackgroundNotificationSender:
             notification.notification_type,
             notification.message
         )
-        await asyncio.sleep(10)
+        await asyncio.sleep(1)
         if random.random() < 0.1:
             raise Exception("Имитация ошибки отправки по email")
         return True
