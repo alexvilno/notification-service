@@ -16,6 +16,7 @@ class CreateNotificationSchema(BaseNotificationSchema):
 
 
 class ResponseNotificationSchema(BaseNotificationSchema):
+    id_notification: int
     user_id: int
     notification_type: Literal[
         "email",
