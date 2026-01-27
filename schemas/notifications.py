@@ -8,7 +8,7 @@ class BaseNotificationSchema(BaseModel):
 
 
 class CreateNotificationSchema(BaseNotificationSchema):
-    user_id: int
+    user_id: int = Field(ge=1)
     notification_type: Literal[
         "email",
         "telegram",
