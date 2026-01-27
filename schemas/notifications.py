@@ -12,6 +12,13 @@ class CreateNotificationSchema(BaseNotificationSchema):
     notification_type: Literal[
         "email",
         "telegram",
-    ] = Field(
-        alias="type", serialization_alias="type"
-    )
+    ] = Field(alias="type")
+
+
+class ResponseNotificationSchema(BaseNotificationSchema):
+    user_id: int
+    notification_type: Literal[
+        "email",
+        "telegram",
+    ] = Field(serialization_alias="type")
+    status: str
