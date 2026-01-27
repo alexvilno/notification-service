@@ -43,15 +43,13 @@ class PostgresConfig(BaseModel):
         return url
 
 
-load_dotenv()
-
-pg_config = PostgresConfig(
-    host=os.getenv("POSTGRES_HOST"),
-    port=int(os.getenv("POSTGRES_PORT")),
-    database=os.getenv("POSTGRES_DATABASE"),
-    user=os.getenv("POSTGRES_USER"),
-    password=SecretStr(os.getenv("POSTGRES_PASSWORD")),
-)
+class AppConfig(BaseModel):
+    telegram_sleep: float = Field(gt=0, default=0.2)
+    email_sleep: float = Field(gt=0, default=1)
+    max_retries: int = Field(ge=1, default=3)
+    retry_delay: float = Field(gt=0, default=1)
+    error_probability: float = Field(gt=0, lt=1, default=0.1)
+    log_level: str = Field(default="INFO")
 
 
 def setup_logging():
@@ -64,18 +62,40 @@ def setup_logging():
         use_colors=True,
     )
 
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-
     # хендлер для STDOUT
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(default_formatter)
 
+    log_level = logging.INFO
+    if app_config.log_level == "DEBUG":
+        log_level = logging.DEBUG
+
+
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.setLevel(log_level)
     root_logger.addHandler(handler)
 
     app_logger = logging.getLogger("notification_service")
-    app_logger.setLevel(logging.DEBUG)
+    app_logger.setLevel(log_level)
 
     return app_logger
+
+
+load_dotenv()
+
+pg_config = PostgresConfig(
+    host=os.getenv("POSTGRES_HOST"),
+    port=int(os.getenv("POSTGRES_PORT")),
+    database=os.getenv("POSTGRES_DATABASE"),
+    user=os.getenv("POSTGRES_USER"),
+    password=SecretStr(os.getenv("POSTGRES_PASSWORD")),
+)
+
+app_config = AppConfig(
+    max_retries=int(os.getenv("MAX_RETRIES")),
+    retry_delay=float(os.getenv("RETRY_DELAY")),
+    telegram_sleep=float(os.getenv("TELEGRAM_SLEEP")),
+    email_sleep=float(os.getenv("EMAIL_SLEEP")),
+    error_probability=float(os.getenv("ERROR_PROBABILITY")),
+    log_level=os.getenv("LOG_LEVEL")
+)

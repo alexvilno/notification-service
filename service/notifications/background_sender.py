@@ -3,6 +3,8 @@ import logging
 import random
 
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from core.config import app_config
 from models.notifications import Notification
 from utils.retry import retry
 
@@ -52,7 +54,10 @@ class BackgroundNotificationSender:
 
             return False
 
-    @retry(max_attempts=3, delay=0.5)
+    @retry(
+        max_attempts=app_config.max_retries,
+        delay=app_config.retry_delay
+    )
     async def _send_email(self, notification: Notification) -> bool:
         logger.debug(
             "отправка email-уведомления "
@@ -62,8 +67,8 @@ class BackgroundNotificationSender:
             notification.notification_type,
             notification.message
         )
-        await asyncio.sleep(1)
-        if random.random() < 0.1:
+        await asyncio.sleep(app_config.email_sleep)
+        if random.random() < app_config.error_probability:
             raise Exception("Имитация ошибки отправки по email")
         return True
 
@@ -77,7 +82,7 @@ class BackgroundNotificationSender:
             notification.notification_type,
             notification.message
         )
-        await asyncio.sleep(0.2)
-        if random.random() < 0.1:
+        await asyncio.sleep(app_config.telegram_sleep)
+        if random.random() < app_config.error_probability:
             raise Exception("Имитация ошибки отправки в телеграмм")
         return True
