@@ -1,5 +1,5 @@
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import CheckConstraint, Column, Index, Integer, Text
+from sqlalchemy.orm import declarative_base, mapped_column, Mapped
+from sqlalchemy import CheckConstraint, Index, Integer, Text
 
 BaseModel = declarative_base()
 
@@ -18,28 +18,28 @@ class Notification(BaseModel):
         Index("idx_status", "status"),
     )
 
-    id_notification = Column(
+    id_notification: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,
         autoincrement=True,
         comment="ID уведомления"
     )
-    user_id = Column(
+    user_id: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         comment="ID пользователя"
     )
-    message = Column(
+    message: Mapped[str] = mapped_column(
         Text,
         nullable=False,
         comment="Текст уведомления"
     )
-    notification_type = Column(
+    notification_type: Mapped[str] = mapped_column(
         Text,
         nullable=False,
         comment="Тип нотификации (telegram, email)"
     )
-    status = Column(
+    status: Mapped[str] = mapped_column(
         Text,
         nullable=False,
         comment="Статус нотификации (pending, sent, failed)",
