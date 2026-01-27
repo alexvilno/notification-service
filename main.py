@@ -4,12 +4,16 @@ import uvicorn
 from fastapi import FastAPI
 
 from api.notifications import notifications_router
+from core.config import setup_logging
 from core.db import engine
 from models.notifications import BaseModel
+
+logger = setup_logging()
 
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
+    logger.info("starting application")
 
     async with engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)
