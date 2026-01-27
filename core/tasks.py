@@ -16,7 +16,7 @@ async def send_notification_background(notification_id: int):
     async with async_session_factory() as session:
         try:
             logger.debug(
-                "Запущена оновая задача отправки "
+                "Запущена фоновая задача отправки "
                 "уведомления notification_id=%i", notification_id
             )
             stmt = select(Notification).where(
