@@ -47,19 +47,11 @@ class EmailHandler(NotificationHandler):
         :param notification: схема уведомления
         :return: результат отправки (True/False)
         """
-        try:
-            await asyncio.sleep(app_config.email_sleep)
-            if random.random() < app_config.error_probability:
-                raise SendError("Имитация ошибки отправки по email")
-            return True
-        except Exception as unexpected_error:
-            logger.warning(
-                "непредвиденная ошибка "
-                "при отправке уведомления с id=%i : %s",
-                notification.id_notification,
-                unexpected_error
-            )
-            return False
+        await asyncio.sleep(app_config.email_sleep)
+        if random.random() < app_config.error_probability:
+            raise SendError("Имитация ошибки отправки по email")
+        return True
+
 
 
 class TelegramHandler(NotificationHandler):
@@ -78,20 +70,10 @@ class TelegramHandler(NotificationHandler):
        :param notification: схема уведомления
        :return: результат отправки (True/False)
        """
-        try:
-            await asyncio.sleep(app_config.telegram_sleep)
-            if random.random() < app_config.error_probability:
-                raise SendError("Имитация ошибки отправки по телеграм")
-            return True
-        except Exception as unexpected_error:
-            logger.warning(
-                "непредвиденная ошибка "
-                "при отправке уведомления с id=%i : %s",
-                notification.id_notification,
-                unexpected_error
-            )
-            return False
-
+        await asyncio.sleep(app_config.telegram_sleep)
+        if random.random() < app_config.error_probability:
+            raise SendError("Имитация ошибки отправки по телеграм")
+        return True
 
 class NotificationHandlerFactory:
     """
