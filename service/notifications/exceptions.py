@@ -1,2 +1,8 @@
-class MaxRetriesExceeded(Exception):
-    pass
+"""
+Исключения для уведомлений
+"""
+
+class SendError(Exception):
+    """
+    Исключение при ошибке отправки во внешний сервис
+    """

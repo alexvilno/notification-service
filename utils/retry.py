@@ -6,41 +6,33 @@ import asyncio
 from functools import wraps
 from logging import getLogger
 
-from service.notifications.exceptions import MaxRetriesExceeded
-
 logger = getLogger(__name__)
 
 
-def retry(max_attempts: int = 3, delay: float = 1.0):
+def retry(max_attempts: int = 3, delay: float = 1.0, return_value_on_fail=None):
     """
     Декоратор для повторных попыток выполнения асинхронной функции
+    :param max_attempts: максимальное число попыток
+    :param delay: задержка между попытками в секундах
+    :param return_value_on_fail: возвращаемое значение
+     при исчерпании лимита
     """
 
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            last_exception = None
 
             for attempt in range(1, max_attempts + 1):
                 try:
-                    result = await func(*args, **kwargs)
+                    return await func(*args, **kwargs)
 
-                    logger.info(
-                        "%s успешно выполнено на попытке %i/%i",
-                        func.__name__,
-                        attempt,
-                        max_attempts,
-                    )
-                    return result
-
-                except Exception as e:
-                    last_exception = e
+                except Exception as last_exception:
                     logger.warning(
                         "%s ошибка на попытке %i/%i: %s",
                         func.__name__,
                         attempt,
                         max_attempts,
-                        str(e),
+                        str(last_exception),
                     )
 
                     if attempt == max_attempts:
@@ -49,7 +41,11 @@ def retry(max_attempts: int = 3, delay: float = 1.0):
                             max_attempts,
                             str(last_exception)
                         )
-                        raise MaxRetriesExceeded()  # Пробрасываем исключение дальше!
+
+                        if return_value_on_fail is not None:
+                            return return_value_on_fail
+                        else:
+                            raise last_exception
 
                     await asyncio.sleep(delay * attempt)
 
