@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import app_config
+from core.db import async_session_factory
 from models.notifications import Notification
 from service.notifications.exceptions import MaxRetriesExceeded
 from service.notifications.repository import NotificationRepository
@@ -19,66 +20,31 @@ logger = logging.getLogger(__name__)
 
 class BackgroundNotificationSender:
     """Сервис для отправки уведомлений в фоне"""
-
-    def __init__(self, session: AsyncSession):
-        self.session = session
-
-    async def send(self, notification: Notification) -> bool:
-        """Отправка уведомления и обновление статуса"""
-        try:
-            if notification.notification_type == "email":
-                success = await self._send_email(notification)
-            elif notification.notification_type == "telegram":
-                success = await self._send_telegram(notification)
-            else:
-                raise ValueError(
-                    f"Неверный тип уведомления: "
-                    f"{notification.notification_type}"
-                )
-            logger.debug(
-                "отправка уведомления завершена"
-                "id=%d, user=%d, type=%s, message='%.50s'",
-                notification.id_notification,
-                notification.user_id,
-                notification.notification_type,
-                notification.message
+    async def send(
+            self,
+            id_notification,
+            user_id,
+            message
+    ):
+        logger.info(
+            'called %i %s',
+            user_id,
+            message
+        )
+        await asyncio.sleep(1)
+        async with async_session_factory() as session:
+            repo = NotificationRepository(session=session)
+            await repo.update_status(
+                id_notification=id_notification,
+                status='failed'
             )
 
-            if success:
-                notification.status = "sent"
+        logger.info(
+            'done %i %s',
+            user_id,
+            message
+        )
 
-            await self.session.commit()
-
-            return success
-
-        except ValueError as validation_error:
-            logger.error(
-                "Ошибка валидации "
-                "при отправке уведомления ID=%i: %s",
-                notification.id_notification,
-                validation_error
-            )
-            await self._mark_as_failed(notification.id_notification)
-            return False
-
-        except (ConnectionError, TimeoutError) as network_error:
-            logger.error(
-                "ошибка сети при отправке уведомления id=%i: %s",
-                notification.id_notification, network_error
-            )
-            await self._mark_as_failed(notification.id_notification)
-            return False
-        except MaxRetriesExceeded:
-            await self._mark_as_failed(notification.id_notification)
-            return False
-        except Exception as err:
-            logger.exception(
-                "непредвиденная ошибка "
-                "при отправке уведомления с id=%i : %s",
-                notification.id_notification, err
-            )
-            await self._mark_as_failed(notification.id_notification)
-            return False
 
     async def _mark_as_failed(
             self,

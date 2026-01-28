@@ -45,7 +45,11 @@ async def create_notification(
     """
     notification = await repository.create(create_schema=create_schema)
     background_tasks.add_task(
-        send_notification_background, notification.id_notification
+        send_notification_background,
+        notification.id_notification,
+        notification.notification_type,
+        notification.user_id,
+        notification.message
     )
     return notification
 

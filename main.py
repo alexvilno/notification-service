@@ -63,5 +63,6 @@ if __name__ == "__main__":
         "main:app",
         host=app_config.app_host,
         port=app_config.app_port,
-        log_level=logging.WARNING
+        log_level=logging.WARNING,
+        workers=4
     )
