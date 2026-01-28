@@ -23,10 +23,11 @@ notifications_router = APIRouter(prefix="/api/notifications", tags=["Notificatio
 
 
 @notifications_router.post(
-    path="/",
     summary="Создать новое уведомление",
     description="Создает новое уведомление и добавляет "
                 "фоновую задачу для отправки",
+    response_description="Созданное уведомление",
+    path="/",
     status_code=status_codes.HTTP_201_CREATED,
 )
 async def create_notification(

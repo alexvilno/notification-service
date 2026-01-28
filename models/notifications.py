@@ -1,3 +1,7 @@
+"""
+Модель сущности уведомления
+notifications
+"""
 from sqlalchemy.orm import declarative_base, mapped_column, Mapped
 from sqlalchemy import CheckConstraint, Index, Integer, Text
 
@@ -5,6 +9,10 @@ BaseModel = declarative_base()
 
 
 class Notification(BaseModel):
+    """
+    Модель сущности уведомления
+    notifications
+    """
     __tablename__ = "notifications"
     __table_args__ = (
         CheckConstraint(
