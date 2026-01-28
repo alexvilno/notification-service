@@ -44,8 +44,7 @@ def retry(max_attempts: int = 3, delay: float = 1.0, return_value_on_fail=None):
 
                         if return_value_on_fail is not None:
                             return return_value_on_fail
-                        else:
-                            raise last_exception
+                        raise last_exception
 
                     await asyncio.sleep(delay * attempt)
 
