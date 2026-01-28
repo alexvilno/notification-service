@@ -53,7 +53,7 @@ async def send_notification_background(
                 )
             else:
                 notification.status = "failed"
-                logger.warning(
+                logger.error(
                     "Уведомление notification_id=%i не удалось отправить",
                     notification_schema.id_notification,
                 )
@@ -61,7 +61,7 @@ async def send_notification_background(
             session.add(notification)
             await session.commit()
     except Exception as unexpected_error:
-        logger.exception(
+        logger.error(
             "непредвиденная ошибка при отправке уведомления id=%i: %s",
             notification_schema.id_notification,
             unexpected_error
