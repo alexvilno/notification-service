@@ -19,7 +19,10 @@ from service.notifications.repository import (
     NotificationRepository,
 )
 
-notifications_router = APIRouter(prefix="/api/notifications", tags=["Notifications"])
+notifications_router = APIRouter(
+    prefix="/api/notifications",
+    tags=["Notifications"]
+)
 
 
 @notifications_router.post(
