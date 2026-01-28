@@ -19,7 +19,7 @@ class PostgresConfig(BaseSettings):
         env_prefix="POSTGRES_",
         env_file=".env",
         env_file_encoding="utf-8",
-        extra='ignore'
+        extra="ignore"
     )
 
     host: str = Field(..., min_length=1)
@@ -56,7 +56,7 @@ class AppConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        extra='ignore'
+        extra="ignore"
     )
 
     telegram_sleep: float = Field(default=0.2, gt=0)
@@ -68,19 +68,18 @@ class AppConfig(BaseSettings):
     app_host: str = Field(default="localhost")
     app_port: int = Field(default=8080, ge=1, le=65535)
 
-
     @classmethod
-    @field_validator('log_level', mode='before')
+    @field_validator("log_level", mode="before")
     def validate_log_level(cls, v: str) -> str:
         """Валидация уровня логирования"""
         if v is None:
             return "INFO"
 
-        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        valid_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         v_upper = v.upper()
 
         if v_upper not in valid_levels:
-            raise ValueError(f'Log level must be one of: {valid_levels}')
+            raise ValueError(f"Log level must be one of: {valid_levels}")
         return v_upper
 
 
@@ -89,12 +88,12 @@ def load_config():
     загрузка конфигурации
     """
     try:
-        postgres_config = PostgresConfig() # type: ignore
-        application_config = AppConfig() # type: ignore
+        postgres_config = PostgresConfig()  # type: ignore
+        application_config = AppConfig()  # type: ignore
 
         logging.basicConfig(
             level=application_config.log_level,
-            format='%(asctime)s  %(name)-20s  %(levelname)-8s  %(message)s',
+            format="%(asctime)s  %(name)-20s  %(levelname)-8s  %(message)s",
             handlers=[logging.StreamHandler(sys.stdout)]
         )
 
@@ -118,7 +117,6 @@ def load_config():
             unexpected_error
         )
         sys.exit(1)
-
 
 
 # глобальные объекты конфигурации
