@@ -94,11 +94,12 @@ def load_config():
 
         logging.basicConfig(
             level=application_config.log_level,
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            format='%(asctime)s  %(name)-20s  %(levelname)-8s  %(message)s',
             handlers=[logging.StreamHandler(sys.stdout)]
         )
 
         root_logger = logging.getLogger(__name__)
+        root_logger.setLevel(application_config.log_level)
         root_logger.info("Configuration loaded successfully")
 
         return postgres_config, application_config, root_logger
