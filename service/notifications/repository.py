@@ -87,7 +87,6 @@ class NotificationRepository:
         user_id: int,
         notification_type: Optional[str] = None,
         status: Optional[str] = None,
-        limit: int = 100,
     ) -> List[Notification]:
         """Получение уведомлений пользователя с фильтрацией"""
         query = select(Notification).where(Notification.user_id == user_id)
@@ -102,7 +101,7 @@ class NotificationRepository:
 
         query = query.order_by(
             Notification.id_notification.desc()
-        ).limit(limit)
+        )
 
         result = await self.session.execute(query)
         return list(result.scalars().all())
