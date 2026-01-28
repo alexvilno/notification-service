@@ -64,10 +64,12 @@ class NotificationRepository:
         :return: модель уведомления
         """
         try:
+            logger.debug("апдейт статуса уведомления с id=%i", id_notification)
             notification: Notification = await self.get(id_notification)
             if notification is None:
                 raise ValueError(f"уведомление с id={id_notification} не найдено")
             notification.status = status
+            self.session.add(notification)
             await self.session.commit()
             return notification
         except TypeError as err:

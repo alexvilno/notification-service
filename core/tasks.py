@@ -62,12 +62,8 @@ async def send_notification_background(notification_id: int):
 
         except Exception as unexpected_error:
             logger.exception(
-                "непредвиденная ошибка при отправке уведомления id=%i",
-                notification_id
+                "непредвиденная ошибка при отправке уведомления id=%i: %s",
+                notification_id,
+                unexpected_error
             )
             await session.rollback()
-            raise RuntimeError(
-                f"непредвиденная ошибка "
-                f"при отправке уведомления id={notification_id}: "
-                f"{unexpected_error}"
-            ) from unexpected_error

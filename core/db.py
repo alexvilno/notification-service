@@ -2,7 +2,6 @@
 Модуль для зависимостей подключения к БД
 """
 
-import os
 from typing import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -11,11 +10,11 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession
 )
 
-from core.config import pg_config
+from core.config import pg_config, app_config
 
 engine = create_async_engine(
     pg_config.async_url,
-    echo=bool(os.getenv("DEBUG")),
+    echo=True if app_config.log_level == "DEBUG" else False,
 )
 
 async_session_factory = async_sessionmaker(
