@@ -65,6 +65,8 @@ class NotificationRepository:
         """
         try:
             notification: Notification = await self.get(id_notification)
+            if notification is None:
+                raise ValueError(f"уведомление с id={id_notification} не найдено")
             notification.status = status
             await self.session.commit()
             return notification
