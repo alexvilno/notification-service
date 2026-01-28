@@ -14,10 +14,7 @@ from core.config import pg_config, app_config
 
 engine = create_async_engine(
     pg_config.async_url,
-    echo=True if app_config.log_level == "DEBUG" else False,
-    pool_size=20,
-    max_overflow=10,
-    pool_pre_ping=True
+    echo=bool(app_config.log_level == "DEBUG"),
 )
 
 async_session_factory = async_sessionmaker(
