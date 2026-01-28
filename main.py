@@ -26,7 +26,7 @@ async def lifespan(fastapi_app: FastAPI):
         app_config.app_host,
         app_config.app_port
     )
-    logger.debug("config: %s",app_config)
+    logger.debug("config: %s", app_config)
     async with engine.begin() as conn:
         await conn.run_sync(BaseModel.metadata.create_all)
     yield
@@ -36,6 +36,7 @@ async def lifespan(fastapi_app: FastAPI):
 
 app = FastAPI(title="Notification Service API", lifespan=lifespan)
 app.include_router(notifications_router)
+
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next) -> Response:
@@ -50,9 +51,11 @@ async def logging_middleware(request: Request, call_next) -> Response:
     process_time_ms = process_time * 1000
 
     logger.info(
-        f"{request.method} {request.url.path} "
-        f"{response.status_code} "
-        f"{process_time_ms:.1f}ms"
+        "%s %s %s %.1fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        process_time_ms
     )
 
     return response
