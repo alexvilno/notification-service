@@ -1,6 +1,9 @@
+"""
+Тесты для API уведомлений
+"""
+from unittest.mock import MagicMock, patch
 import pytest
 from starlette import status
-from unittest.mock import MagicMock, patch, AsyncMock
 from fastapi.testclient import TestClient
 from main import app
 
