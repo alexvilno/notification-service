@@ -50,7 +50,7 @@ class EmailHandler(NotificationHandler):
         try:
             await asyncio.sleep(app_config.email_sleep)
             if random.random() < app_config.error_probability:
-                raise Exception("Имитация ошибки отправки по email")
+                raise SendError("Имитация ошибки отправки по email")
             return True
         except Exception as unexpected_error:
             logger.warning(
