@@ -1,9 +1,13 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, SecretStr, field_validator
-from typing import Optional
-from urllib.parse import quote_plus
+"""
+Модуль для инициализации конфига
+из переменных окружения
+"""
 import logging
 import sys
+from typing import Optional
+from urllib.parse import quote_plus
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr, field_validator
 
 
 class PostgresConfig(BaseSettings):
@@ -96,23 +100,24 @@ def load_config():
 
         root_logger = logging.getLogger(__name__)
         root_logger.info("Configuration loaded successfully")
-        root_logger.debug(
-            f"Postgres config: "
-            f"{postgres_config.host}:{postgres_config.port}/"
-            f"{postgres_config.database}"
-        )
-        root_logger.debug(f"Log level: {application_config.log_level}")
 
         return postgres_config, application_config, root_logger
 
-    except Exception as e:
-        # логирование ошибок загрузки конфигурации
-        logging.basicConfig(
-            level=logging.ERROR,
-            format='%(asctime)s - %(levelname)s - %(message)s'
+    except ValueError as validation_error:
+        logging.error(
+            "Переменные окружения указаны не верно "
+            "или отсутствует файл .env: %s",
+            validation_error
         )
-        logging.error(f"Configuration loading failed: {e}")
         sys.exit(1)
+
+    except Exception as unexpected_error:
+        logging.error(
+            "непредвиденная ошибка: %s",
+            unexpected_error
+        )
+        sys.exit(1)
+
 
 
 # глобальные объекты конфигурации

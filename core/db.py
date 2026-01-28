@@ -1,3 +1,7 @@
+"""
+Модуль для зависимостей подключения к БД
+"""
+
 import os
 from typing import AsyncIterator
 
