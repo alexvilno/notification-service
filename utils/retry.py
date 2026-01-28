@@ -9,7 +9,11 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-def retry(max_attempts: int = 3, delay: float = 1.0, return_value_on_fail=None):
+def retry(
+        max_attempts: int = 3,
+        delay: float = 1.0,
+        return_value_on_fail=None
+):
     """
     Декоратор для повторных попыток выполнения асинхронной функции
     :param max_attempts: максимальное число попыток
