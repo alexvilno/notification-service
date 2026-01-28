@@ -24,7 +24,7 @@ class CreateNotificationSchema(BaseNotificationSchema):
     ] = Field(alias="type")
 
 
-class ResponseNotificationSchema(BaseNotificationSchema):
+class NotificationSchema(BaseNotificationSchema):
     """
     схема уведомления с id и статусом
     """

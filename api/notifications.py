@@ -11,7 +11,7 @@ from starlette import status as status_codes
 from core.tasks import send_notification_background
 from schemas.notifications import (
     CreateNotificationSchema,
-    ResponseNotificationSchema,
+    NotificationSchema,
 )
 
 from service.notifications.repository import (
@@ -44,12 +44,13 @@ async def create_notification(
     не дожидаясь завершения отправки.
     """
     notification = await repository.create(create_schema=create_schema)
+    notification_schema = NotificationSchema.model_validate(
+        notification,
+        from_attributes=True
+    )
     background_tasks.add_task(
         send_notification_background,
-        notification.id_notification,
-        notification.notification_type,
-        notification.user_id,
-        notification.message
+        notification_schema
     )
     return notification
 
@@ -59,7 +60,7 @@ async def create_notification(
     summary="Получить уведомления пользователя",
     description="Возвращает уведомления пользователя "
                 "с фильтрацией по статусу отправки",
-    response_model=List[ResponseNotificationSchema],
+    response_model=List[NotificationSchema],
     status_code=status_codes.HTTP_200_OK,
 )
 async def get_user_notifications(
@@ -79,7 +80,7 @@ async def get_user_notifications(
         status=status
     )
     schemas = [
-        ResponseNotificationSchema.model_validate(
+        NotificationSchema.model_validate(
             notification, from_attributes=True
         )
         for notification in notifications
