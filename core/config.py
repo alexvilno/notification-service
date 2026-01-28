@@ -1,31 +1,34 @@
-import logging
-import os
-import sys
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr, field_validator
 from typing import Optional
 from urllib.parse import quote_plus
-
-from pydantic import BaseModel, Field, SecretStr
-
-from dotenv import load_dotenv
-from uvicorn.logging import DefaultFormatter
+import logging
+import sys
 
 
-class PostgresConfig(BaseModel):
+class PostgresConfig(BaseSettings):
     """
     Конфигурация postgreSQL.
     """
 
-    host: str = Field(min_length=1)
-    port: int = Field(ge=1, le=65535)
-    database: str = Field(min_length=1)
-    user: str = Field(min_length=1)
-    password: SecretStr = Field(min_length=1)
+    model_config = SettingsConfigDict(
+        env_prefix="POSTGRES_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra='ignore'
+    )
+
+    host: str = Field(..., min_length=1)
+    port: int = Field(5432, ge=1, le=65535)
+    database: str = Field(..., min_length=1)
+    user: str = Field(..., min_length=1)
+    password: SecretStr = Field(..., min_length=1)
     pg_schema: Optional[str] = Field(default="public")
 
     @property
     def async_url(self) -> str:
         """
-        Билдер URL для асинхронного драйвера.
+        Билдер URL для асинхронного драйвера
         """
         return self._build_url("postgresql+asyncpg://")
 
@@ -38,64 +41,79 @@ class PostgresConfig(BaseModel):
             f"{quote_plus(self.password.get_secret_value())}"
         )
         loc = f"{self.host}:{self.port}"
-        url = f"{scheme}{credentials}@{loc}/{self.database}"
-
-        return url
+        return f"{scheme}{credentials}@{loc}/{self.database}"
 
 
-class AppConfig(BaseModel):
-    telegram_sleep: float = Field(gt=0, default=0.2)
-    email_sleep: float = Field(gt=0, default=1)
-    max_retries: int = Field(ge=1, default=3)
-    retry_delay: float = Field(gt=0, default=1)
-    error_probability: float = Field(gt=0, lt=1, default=0.1)
-    log_level: str = Field(default="INFO")
-
-
-def setup_logging():
+class AppConfig(BaseSettings):
     """
-    Настройка логирования
+    Конфигурация приложения
     """
-    default_formatter = DefaultFormatter(
-        fmt="%(levelprefix)s %(asctime)s - %(name)s - %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        use_colors=True,
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra='ignore'
     )
 
-    # хендлер для STDOUT
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(default_formatter)
-
-    log_level = logging.INFO
-    if app_config.log_level == "DEBUG":
-        log_level = logging.DEBUG
-
-
-    root_logger = logging.getLogger()
-    root_logger.setLevel(log_level)
-    root_logger.addHandler(handler)
-
-    app_logger = logging.getLogger("notification_service")
-    app_logger.setLevel(log_level)
-
-    return app_logger
+    telegram_sleep: float = Field(default=0.2, gt=0)
+    email_sleep: float = Field(default=1.0, gt=0)
+    max_retries: int = Field(default=3, ge=1)
+    retry_delay: float = Field(default=1.0, gt=0)
+    error_probability: float = Field(default=0.1, gt=0, lt=1)
+    log_level: str = Field(default="INFO")
+    app_host: str = Field(default="localhost")
+    app_port: int = Field(default=8080, ge=1, le=65535)
 
 
-load_dotenv()
+    @classmethod
+    @field_validator('log_level', mode='before')
+    def validate_log_level(cls, v: str) -> str:
+        """Валидация уровня логирования"""
+        if v is None:
+            return "INFO"
 
-pg_config = PostgresConfig(
-    host=os.getenv("POSTGRES_HOST"),
-    port=int(os.getenv("POSTGRES_PORT")),
-    database=os.getenv("POSTGRES_DATABASE"),
-    user=os.getenv("POSTGRES_USER"),
-    password=SecretStr(os.getenv("POSTGRES_PASSWORD")),
-)
+        valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+        v_upper = v.upper()
 
-app_config = AppConfig(
-    max_retries=int(os.getenv("MAX_RETRIES")),
-    retry_delay=float(os.getenv("RETRY_DELAY")),
-    telegram_sleep=float(os.getenv("TELEGRAM_SLEEP")),
-    email_sleep=float(os.getenv("EMAIL_SLEEP")),
-    error_probability=float(os.getenv("ERROR_PROBABILITY")),
-    log_level=os.getenv("LOG_LEVEL")
-)
+        if v_upper not in valid_levels:
+            raise ValueError(f'Log level must be one of: {valid_levels}')
+        return v_upper
+
+
+def load_config():
+    """
+    загрузка конфигурации
+    """
+    try:
+        postgres_config = PostgresConfig() # type: ignore
+        application_config = AppConfig() # type: ignore
+
+        logging.basicConfig(
+            level=application_config.log_level,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            handlers=[logging.StreamHandler(sys.stdout)]
+        )
+
+        root_logger = logging.getLogger(__name__)
+        root_logger.info("Configuration loaded successfully")
+        root_logger.debug(
+            f"Postgres config: "
+            f"{postgres_config.host}:{postgres_config.port}/"
+            f"{postgres_config.database}"
+        )
+        root_logger.debug(f"Log level: {application_config.log_level}")
+
+        return postgres_config, application_config, root_logger
+
+    except Exception as e:
+        # логирование ошибок загрузки конфигурации
+        logging.basicConfig(
+            level=logging.ERROR,
+            format='%(asctime)s - %(levelname)s - %(message)s'
+        )
+        logging.error(f"Configuration loading failed: {e}")
+        sys.exit(1)
+
+
+# глобальные объекты конфигурации
+pg_config, app_config, logger = load_config()

@@ -4,11 +4,9 @@ import uvicorn
 from fastapi import FastAPI
 
 from api.notifications import notifications_router
-from core.config import setup_logging, app_config
+from core.config import logger, app_config
 from core.db import engine
 from models.notifications import BaseModel
-
-logger = setup_logging()
 
 
 @asynccontextmanager
@@ -26,4 +24,4 @@ app.include_router(notifications_router)
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8080)
+    uvicorn.run("main:app", host=app_config.app_host, port=app_config.app_port)
