@@ -28,7 +28,7 @@ def test_create_notification_success(client):
     }
 
     # мок фоновой задачи
-    with patch('api.notifications.BackgroundTasks') as MockBackgroundTasks:
+    with patch("api.notifications.BackgroundTasks") as MockBackgroundTasks:
         mock_tasks = MagicMock()
         MockBackgroundTasks.return_value = mock_tasks
 

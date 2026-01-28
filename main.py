@@ -1,3 +1,6 @@
+"""
+Точка входа
+"""
 from contextlib import asynccontextmanager
 
 import uvicorn

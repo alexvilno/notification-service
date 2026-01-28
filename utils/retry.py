@@ -1,3 +1,7 @@
+"""
+Модуль с механизмов retry для асинхронных функций
+"""
+
 import asyncio
 from functools import wraps
 from logging import getLogger
@@ -35,7 +39,10 @@ def retry(max_attempts: int = 3, delay: float = 1.0):
                     )
 
                     if attempt == max_attempts:
-                        logger.error("все %i попыток провалились", max_attempts)
+                        logger.error(
+                            "все %i попыток провалились",
+                            max_attempts
+                        )
                         return False
 
                     await asyncio.sleep(delay * attempt)
