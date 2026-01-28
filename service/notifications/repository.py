@@ -1,6 +1,12 @@
-from typing import List, Optional
+"""
+Модуль для реализации операций с данными
+для уведомлений
+"""
+import logging
+from typing import List, Optional, Literal
 
 from fastapi import Depends
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -8,8 +14,13 @@ from core.db import get_session
 from models.notifications import Notification
 from schemas.notifications import CreateNotificationSchema
 
+logger = logging.getLogger(__name__)
+
 
 class NotificationRepository:
+    """
+    Слой работы с БД с уведомлениями
+    """
     def __init__(self, session: AsyncSession):
         self.session = session
 
@@ -31,7 +42,42 @@ class NotificationRepository:
         return notification
 
     async def get(self, id_notification) -> Optional[Notification]:
+        """
+        Метод возвращает модель уведомления,
+        если запись существует в БД
+
+        :param id_notification: id уведомления
+        :return: уведомление, если существует
+        """
         return await self.session.get(Notification, id_notification)
+
+    async def update_status(
+            self,
+            id_notification,
+            status: Literal["failed", "sent"]
+    ) -> Notification:
+        """
+        Метод обновляет статус уведомления
+
+        :param id_notification: id уведомления
+        :param status: статус (failed, sent)
+        :return: модель уведомления
+        """
+        try:
+            notification: Notification = await self.get(id_notification)
+            notification.status = status
+            await self.session.commit()
+            return notification
+        except TypeError as err:
+            logger.error(
+                "неверный статус уведомления: %s",
+                err
+            )
+            raise ValidationError(
+                "неверный статус уведомления"
+            ) from err
+
+
 
     async def get_by_user_id(
         self,
@@ -62,4 +108,9 @@ class NotificationRepository:
 def get_notification_repository(
     session: AsyncSession = Depends(get_session),
 ) -> NotificationRepository:
+    """
+    Зависимость для эндпоинтов FastAPI
+    использование: repo = Depends(get_notification_repository)
+    :return: Зависимость (Depends) FastAPI
+    """
     return NotificationRepository(session)
