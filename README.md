@@ -9,7 +9,7 @@
 Склонировать репозиторий
 
 ```
-git clone https://gitlab.baretskiy.ru/ozon/notification_service.git
+git clone https://github.com/alexvilno/notification-service.git
 ```
 
 Перейти в каталог репозитория
@@ -23,6 +23,8 @@ cd notification-service
 ```
 python3 -m venv .venv
 ```
+
+Активировать виртуальное окружение
 
 Установить зависимости
 
