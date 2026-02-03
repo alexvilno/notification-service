@@ -1,5 +1,8 @@
 # 
 
+## Сырой набросок на первых этапах
+https://gitlab.baretskiy.ru/ozon/ozon_notification_service
+
 ## Как запустить проект локально
 
 
