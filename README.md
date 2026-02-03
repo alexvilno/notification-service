@@ -2,6 +2,8 @@
 
 ## Сырой набросок на первых этапах
 https://gitlab.baretskiy.ru/ozon/ozon_notification_service
++ на всякий случай залил в гит
+https://github.com/alexvilno/notification-service-layout-example
 
 ## Как запустить проект локально
 
